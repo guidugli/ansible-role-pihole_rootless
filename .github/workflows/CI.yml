@@ -1,0 +1,76 @@
+---
+name: CI
+
+# Controls when the workflow will run
+'on':
+  push:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+  schedule:
+    - cron: "0 5 * * 0"
+
+defaults:
+  run:
+    working-directory: 'guidugli.pihole_rootless'
+
+jobs:
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check out the codebase.
+        uses: actions/checkout@v3
+        with:
+          path: 'guidugli.pihole_rootless'
+
+      - name: Set up Python 3.
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install test dependencies.
+        run: pip3 install yamllint
+
+      - name: Lint code.
+        run: |
+          yamllint .
+  molecule:
+    name: Molecule
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        distro:
+          - rockylinux9
+          - centos8
+          - ubuntu2204
+          - ubuntu2004
+          - debian12
+          - debian11
+          - fedora38
+          - fedora37
+
+    steps:
+      - name: Check out the codebase.
+        uses: actions/checkout@v3
+        with:
+          path: 'guidugli.pihole_rootless'
+
+      - name: Set up Python 3.
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install test dependencies.
+        run: pip3 install ansible molecule molecule-plugins[docker] docker ansible-lint[yamllint]
+
+      - name: Run Molecule tests.
+        run: molecule test
+        env:
+          PY_COLORS: '1'
+          ANSIBLE_FORCE_COLOR: '1'
+          MDRIVER: 'docker'
+          MOLECULE_DISTRO: ${{ matrix.distro }}

@@ -1,0 +1,30 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: ${MDRIVER:-podman}
+platforms:
+  - name: instance
+    image: docker.io/geerlingguy/docker-${MOLECULE_DISTRO:-centos8}-ansible:latest
+    privileged: true
+    tmpfs:
+      - /run
+      - /tmp
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    pre_build_image: true
+provisioner:
+  name: ansible
+  config_options:
+    defaults:
+      interpreter_python: auto_silent
+      callbacks_enabled: profile_tasks, timer, yaml
+    ssh_connection:
+      pipelining: false
+verifier:
+  name: ansible
+lint: |
+  set -e
+  yamllint .
+  ansible-lint

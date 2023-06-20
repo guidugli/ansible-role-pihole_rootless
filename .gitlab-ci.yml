@@ -1,0 +1,34 @@
+---
+image: quay.io/ansible/toolset
+services:
+  - docker:dind
+
+variables:
+  GIT_CLONE_PATH: $CI_BUILDS_DIR/guidugli.$CI_PROJECT_TITLE
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+
+before_script:
+  - docker info
+  - python3 --version
+  - ansible --version
+  - molecule --version
+
+molecule:
+  stage: test
+  tags:
+    - docker
+  variables:
+    DOCKER_HOST: "tcp://docker:2375"
+    PY_COLORS: 1
+    MDRIVER: docker
+  script:
+    - MOLECULE_DISTRO=centos7 molecule test
+    - MOLECULE_DISTRO=centos8 molecule test
+    - MOLECULE_DISTRO=debian10 molecule test
+    - MOLECULE_DISTRO=debian11 molecule test
+    - MOLECULE_DISTRO=ubuntu1804 molecule test
+    - MOLECULE_DISTRO=ubuntu2004 molecule test
+    - MOLECULE_DISTRO=fedora34 molecule test
+  only:
+    - main

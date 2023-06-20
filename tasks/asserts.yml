@@ -1,0 +1,27 @@
+---
+
+- name: Verify port numbers
+  ansible.builtin.assert:
+    that:
+      - vars[item] is defined
+      - vars[item] | int(0) > 0
+      - vars[item] | int(100000) < 65536
+    quiet: yes
+  loop:
+    - pihole_dnsport
+    - pihole_web_port
+
+- name: Mandatory variables must be defined
+  ansible.builtin.assert:
+    that:
+      - vars[item] is defined
+    quiet: yes
+  loop:
+    - pihole_username
+    - pihole_homedir
+    - pihole_systemd_dir
+    - pihole_server_ip
+    - pihole_container_name
+    - timezone
+    - pihole_web_password
+    - firewall_type

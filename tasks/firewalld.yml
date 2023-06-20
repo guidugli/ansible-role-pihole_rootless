@@ -1,0 +1,15 @@
+---
+
+- name: "Redirect TCP port 53 to port {{ pihole_dns_port }}"
+  ansible.posix.firewalld:
+    rich_rule: rule family=ipv4 forward-port port=53 protocol=tcp to-port={{ pihole_dns_port }}
+    permanent: true
+    immediate: true
+    state: enabled
+
+- name: "Redirect UDP port 53 to port {{ pihole_dns_port }}"
+  ansible.posix.firewalld:
+    rich_rule: rule family=ipv4 forward-port port=53 protocol=udp to-port={{ pihole_dns_port }}
+    permanent: true
+    immediate: true
+    state: enabled

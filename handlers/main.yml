@@ -1,0 +1,14 @@
+---
+# handlers file for pihole_rootless
+
+- name: Reload systemd for user
+  become: yes
+  become_user: "{{ pihole_username }}"
+  become_method: su
+  become_flags: '-s /bin/bash -l'
+  ansible.builtin.systemd:
+    daemon_reload: yes
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "{{ xdg_runtime_dir }}"
+

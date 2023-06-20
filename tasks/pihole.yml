@@ -1,0 +1,140 @@
+---
+# tasks file for pihole_rootless
+
+- name: Create pihole user
+  vars:
+    user_account_add:
+      - name: "{{ pihole_username }}"
+        shell: /usr/sbin/nologin
+        home: "{{ pihole_homedir }}"
+        create_home: yes
+        skeleton: /etc/skel
+        password: '!'
+        password_lock: true
+        umask: '0027'
+        update_password: 'on_create'
+        linger: true
+  import_role:
+    name: guidugli.user
+
+- name: Create directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ pihole_username }}"
+    group: "{{ pihole_username }}"
+    mode: '0755'
+  loop:
+    - "{{ pihole_homedir }}/etc-dnsmasq.d"
+    - "{{ pihole_homedir }}/etc-pihole"
+    - "{{ pihole_systemd_dir }}"
+    - "{{ pihole_homedir }}//.ansible/tmp"
+
+- name: ensure podman is installed
+  package:
+    name: podman
+    state: present
+
+- name: Refrain systemd-resolved from listening to port 53
+  block:
+    - name: Ensure systemd-resolved is disabled
+      ansible.builtin.systemd:
+        name: systemd-resolved.service
+        state: stopped
+        enabled: false
+        masked: true
+      ignore_errors: true
+
+- name: Create resolv.conf file
+  ansible.builtin.copy:
+    content: "nameserver 127.0.0.1"
+    dest: "{{ pihole_homedir }}/resolv.conf"
+
+- name: Create config.env file
+  ansible.builtin.template:
+    src: config.env.j2
+    dest: "{{ pihole_homedir }}/config.env"
+    owner: "{{ pihole_username }}"
+    group: "{{ pihole_username }}"
+    mode: '0750'
+
+- name: Download image
+  become: yes
+  become_method: su
+  become_user: "{{ pihole_username }}"
+  become_flags: '-s /bin/bash -l'
+  containers.podman.podman_image:
+    name: "{{ pihole_container_image }}"
+    tag: latest
+    state: present
+
+- name: Create secret
+  become: yes
+  become_method: su
+  become_user: "{{ pihole_username }}"
+  become_flags: '-s /bin/bash -l'
+  containers.podman.podman_secret:
+    name: webpassword
+    state: present
+    data: "{{ pihole_web_password }}"
+
+- name: Create Pihole Container
+  become: yes
+  become_method: su
+  become_user: "{{ pihole_username }}"
+  become_flags: '-s /bin/bash -l'
+  containers.podman.podman_container:
+    cap_add: NET_ADMIN
+    name: "{{ pihole_container_name }}"
+    image: "{{ pihole_container_image }}"
+    secrets: webpassword
+    state: started
+    detach: yes
+    label:
+      io.containers.autoupdate: registry
+    memory: "512M"
+    rm: yes
+    network: "slirp4netns:port_handler=slirp4netns"
+    security_opt:
+      - "label=disable"
+    ports:
+      - "{{ pihole_dns_port }}:53/tcp"
+      - "{{ pihole_dns_port }}:53/udp"
+      - "{{ pihole_web_port }}:80/tcp"
+    volume:
+      - "{{ pihole_homedir }}/resolv.conf:/etc/resolv.conf:rw"
+      - "{{ pihole_homedir }}/etc-pihole:/etc/pihole:rw"
+      - "{{ pihole_homedir }}/etc-dnsmasq.d:/etc/dnsmasq.d:rw"
+    timezone: "{{ pihole_timezone }}"
+    env_file: "{{ pihole_homedir }}/config.env"
+    generate_systemd:
+      path: "{{ pihole_systemd_dir }}"
+      restart_policy: "on-failure"
+      time: 120
+      new: yes
+  notify: Reload systemd for user
+
+- name: Flush handlers
+  meta: flush_handlers
+
+- name: Enable pihole service
+  become: yes
+  become_user: "{{ pihole_username }}"
+  become_method: su
+  become_flags: '-s /bin/bash -l'
+  ansible.builtin.systemd:
+    name: "container-{{ pihole_container_name }}.service"
+    scope: user
+    enabled: yes
+    state: started
+
+- name: Enable auto-update service
+  become: yes
+  become_user: "{{ pihole_username }}"
+  become_method: su
+  become_flags: '-s /bin/bash -l'
+  ansible.builtin.systemd:
+    name: "podman-auto-update.timer"
+    scope: user
+    enabled: yes
+    state: started

@@ -1,0 +1,33 @@
+---
+dependencies: []
+
+galaxy_info:
+  role_name: pihole_rootless
+  author: guidugli
+  description: Install pihole container using podman rootless
+  company: Creuzo Tech
+  license: "license (BSD, MIT)"
+  min_ansible_version: '2.9'
+
+  # To view available platforms and versions (or releases), visit:
+  # https://galaxy.ansible.com/api/v1/platforms/
+  #
+  platforms:
+    - name: EL
+      versions:
+        - '9'
+        - '8'
+    - name: Fedora
+      versions:
+        - '38'
+        - '37'
+    - name: Ubuntu
+      versions:
+        - jammy
+        - focal
+    - name: Debian
+      versions:
+        - bookworm
+        - bullseye
+
+  galaxy_tags: ['pihole', 'podman', 'rootless']

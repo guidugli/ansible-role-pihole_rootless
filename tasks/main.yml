@@ -1,0 +1,13 @@
+---
+# tasks file for pihole_rootless
+
+# Check input variables
+- name: Check input variables (include asserts.yml)
+  ansible.builtin.include_tasks: asserts.yml
+
+- name: Run pihole setup
+  ansible.builtin.include_tasks: pihole.yml
+
+- name: Set firewall
+  ansible.builtin.include_tasks: "{{ firewall_type }}.yml"
+  when: firewall_type in ['iptables', 'nftables', 'firewalld']

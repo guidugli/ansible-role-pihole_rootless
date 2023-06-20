@@ -1,0 +1,126 @@
+---
+# defaults file for pihole_rootless
+
+## Mandatory variables ##
+
+# Username of the user to be created for pihole
+pihole_username: pihole
+
+# Path to the pihole homedir (will host all pihole files)
+pihole_homedir: "/srv/{{ pihole_username }}"
+
+# Path to store systemd files for pihole user
+pihole_systemd_dir: "{{ pihole_homedir }}/.config/systemd/user"
+
+# Pihole server IP (mandatory)
+#pihole_server_ip: 192.168.1.100
+
+# Name of the container
+pihole_container_name: pihole-server
+
+# Non-privileged DNS Port
+pihole_dns_port: 1153
+
+# Non-privileged Web Port
+pihole_web_port: 1180
+
+# Timezone
+pihole_timezone: "America/Sao_Paulo"
+
+# Password to be set for web page. It is recommended to set a variable
+# in a vault and specify it here.
+#pihole_web_password: "{{ vault_web_password }}"
+
+# Firewall to be configured (only port redirection will be set)
+# Supported are iptables and nftables
+# Any other value will not set firewall
+firewall_type: iptables
+
+## Optional Variables ##
+
+# Domain name sent by the DHCP server.
+pihole_domain_name: local
+
+# Enable DNSSEC support
+pihole_dnssec: 'false'
+
+# Never forward reverse lookups for private ranges
+pihole_dns_bogus_priv: 'true'
+
+# Never forward non-FQDNs
+pihole_dns_fqdn_required: 'true'
+
+# Enable DHCP server. Static DHCP leases can be configured with a custom /etc/dnsmasq.d/04-pihole-static-dhcp.conf
+pihole_enable_dhcp: 'false'
+
+# Start of the range of IP addresses to hand out by the DHCP server (mandatory if DHCP server is enabled).
+#pihole_dhcp_start: 192.168.10.100
+
+# End of the range of IP addresses to hand out by the DHCP server (mandatory if DHCP server is enabled).
+#pihole_dhcp_end: 192.168.10.150
+
+# Router (gateway) IP address sent by the DHCP server (mandatory if DHCP server is enabled).
+#pihole_dhcp_router: 192.168.10.1
+
+# DHCP lease time in hours.
+pihole_dhcp_leasetime: 24
+
+# Enable DHCP server IPv6 support (SLAAC + RA).
+pihole_dhcp_ipv6: 'false'
+
+# Enable DHCPv4 rapid commit (fast address assignment).
+pihole_dhcp_rapid_commit: 'false'
+
+# What your web server 'virtual host' is, accessing admin through this Hostname/IP allows you to make changes to the
+# whitelist / blacklists in addition to the default 'http://pi.hole/admin/' address
+pihole_virtual_host: "{{ ansible_hostname }}"
+
+# For unraid compatibility, strips out all the IPv6 configuration from DNS/Web services when false.
+pihole_ipv6: 'true'
+
+# Set preferred temperature unit to c: Celsius, k: Kelvin, or f Fahrenheit units.
+pihole_temperature_unit: c
+
+# Use boxed layout (helpful when working on large screens)
+pihole_webuiboxedlayout: boxed
+
+# Enable query logging or not.
+pihole_query_logging: 'true'
+
+# User interface theme to use.
+pihole_web_theme: default-light
+
+# List of domains/subdomains on which CORS is allowed. Wildcards are not supported.
+# Eg: pihole_cors_hosts: domain.com,home.domain.com,www.domain.com.
+#pihole_cors_hosts: domain.com
+
+# Set the cache size for dnsmasq. Useful for increasing the default cache size or to set it to 0. Note that when
+# DNSSEC is "true", then this setting is ignored.
+pihole_custom_cache_size: 10000
+
+## Experimental variables ##
+
+# Allows changing the user that FTLDNS runs as. Default: pihole, some systems such as Synology NAS may require
+# you to change this to root (See #963)
+#pihole_dnsmasq_user: pihole
+
+# Overrides image's default pihole user id to match a host user id
+# IMPORTANT: id must not already be in use inside the container!
+#pihole_uid: 999
+
+# Overrides image's default pihole group id to match a host group id
+# IMPORTANT: id must not already be in use inside the container!
+#pihole_gid: 999
+
+# Overrides image's default www-data group id to match a host group id
+# IMPORTANT: id must not already be in use inside the container!
+# (Make sure it is different to PIHOLE_GID if you are using that, also)
+#pihole_web_uid: 33
+
+# Overrides image's default www-data group id to match a host group id
+# IMPORTANT: id must not already be in use inside the container!
+# (Make sure it is different to PIHOLE_GID if you are using that, also)
+#pihole_web_gid: 33
+
+# 0 logs to defined files, 1 redirect access and error logs to stdout
+#pihole_weblogs_stdout: 0

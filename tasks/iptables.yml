@@ -1,0 +1,58 @@
+---
+
+- name: "Redirect TCP port 53 to port {{ pihole_dns_port }}"
+  ansible.builtin.iptables:
+    table: nat
+    chain: PREROUTIMG
+    source: "0/0"
+    destination: "0/0"
+    protocol: "tcp"
+    destination_port: 53
+    jump: REDIRECT
+    to_ports: "{{ pihole_dns_port }}"
+
+- name: "Redirect UDP port 53 to port {{ pihole_dns_port }}"
+  ansible.builtin.iptables:
+    table: nat
+    chain: PREROUTIMG
+    source: "0/0"
+    destination: "0/0"
+    protocol: "udp"
+    destination_port: 53
+    jump: REDIRECT
+    to_ports: "{{ pihole_dns_port }}"
+
+- name: "OUTPUT Redirect TCP port 53 to port {{ pihole_dns_port }}"
+  ansible.builtin.iptables:
+    table: nat
+    chain: OUTPUT
+    protocol: "tcp"
+    out_interface: "lo"
+    destination_port: 53
+    jump: REDIRECT
+    to_ports: "{{ pihole_dns_port }}"
+
+- name: "OUTPUT Redirect UDP port 53 to port {{ pihole_dns_port }}"
+  ansible.builtin.iptables:
+    table: nat
+    chain: OUTPUT
+    protocol: "udp"
+    out_interface: "lo"
+    destination_port: 53
+    jump: REDIRECT
+    to_ports: "{{ pihole_dns_port }}"
+
+- name: Save current state of the firewall in system file
+  vars:
+    iptables_v4_path: "{{ '/etc/sysconfig/iptables' if ansible_os_family='RedHat' else '/etc/iptables/rules.v4' }}"
+  community.general.iptables_state:
+    state: saved
+    path: "{{ iptables_v4_path }}"
+    ip_version: ipv4
+
+- name: Enable iptables.service
+  ansible.builtin.systemd:
+    name: iptables.service
+    state: started
+    enabled: yes
+

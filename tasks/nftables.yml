@@ -1,0 +1,47 @@
+---
+
+- name: Create directory to store active nftables scripts
+  ansible.builtin.file:
+    path: /etc/nftables.d
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Add include in nftables.conf
+  ansible.builtin.copy:
+    content: |
+      #!/usr/sbin/nft -f
+
+      flush ruleset
+
+      include "/etc/nftables.d/*"
+    dest: /etc/nftables.conf
+    backup: yes
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Create nft rules ro redirect port 53
+  ansible.builtin.copy:
+    content: |
+      table ip nat {
+        chain PREROUTING {
+                type nat hook prerouting priority dstnat; policy accept;
+                meta l4proto udp udp dport 53 counter redirect to :{{ pihole_dns_port }}
+                meta l4proto tcp tcp dport 53 counter redirect to :{{ pihole_dns_port }}
+        }
+
+        chain OUTPUT {
+                type nat hook output priority -100; policy accept;
+                oifname "lo" meta l4proto udp udp dport 53 counter redirect to :{{ pihole_dns_port }}
+                oifname "lo" meta l4proto tcp tcp dport 53 counter redirect to :{{ pihole_dns_port }}
+        }
+      }
+    dest: /etc/nftables.d/dns.conf
+
+- name: Enable nftables.service
+  ansible.builtin.systemd:
+    name: nftables.service
+    state: started
+    enabled: yes

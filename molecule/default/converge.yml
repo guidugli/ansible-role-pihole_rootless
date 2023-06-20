@@ -1,0 +1,10 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    pihole_server_ip: 127.0.0.1
+    pihole_web_password: 'SomePassword'
+    pihole_dnssec: true
+    firewall_type: firewalld
+  roles:
+    - guidugli.pihole_rootless
