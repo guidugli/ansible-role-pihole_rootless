@@ -1,2 +1,4 @@
 ---
 # vars file for pihole_rootless
+
+pihole_container_image: docker.io/guidugli/pihole-unbound
