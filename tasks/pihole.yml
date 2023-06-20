@@ -3,6 +3,7 @@
 
 - name: Create pihole user
   vars:
+    user_skip_config: true
     user_account_add:
       - name: "{{ pihole_username }}"
         shell: /usr/sbin/nologin
