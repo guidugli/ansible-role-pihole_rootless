@@ -8,7 +8,7 @@
       - vars[item] | int(100000) < 65536
     quiet: yes
   loop:
-    - pihole_dnsport
+    - pihole_dns_port
     - pihole_web_port
 
 - name: Mandatory variables must be defined
@@ -22,6 +22,6 @@
     - pihole_systemd_dir
     - pihole_server_ip
     - pihole_container_name
-    - timezone
+    - pihole_timezone
     - pihole_web_password
     - firewall_type

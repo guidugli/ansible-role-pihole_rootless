@@ -11,4 +11,3 @@
     scope: user
   environment:
     XDG_RUNTIME_DIR: "{{ xdg_runtime_dir }}"
-
