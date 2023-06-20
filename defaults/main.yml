@@ -13,7 +13,7 @@ pihole_homedir: "/srv/{{ pihole_username }}"
 pihole_systemd_dir: "{{ pihole_homedir }}/.config/systemd/user"
 
 # Pihole server IP (mandatory)
-#pihole_server_ip: 192.168.1.100
+pihole_server_ip: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
 
 # Name of the container
 pihole_container_name: pihole-server
@@ -31,12 +31,15 @@ pihole_timezone: "America/Sao_Paulo"
 # in a vault and specify it here.
 #pihole_web_password: "{{ vault_web_password }}"
 
+# If set to true, it will stop the container to change the web password
+# If set to false, it will set the secret if container if stopped or ignore
+# setting it if running
+pihole_reset_password: false
+
 # Firewall to be configured (only port redirection will be set)
 # Supported are iptables and nftables
 # Any other value will not set firewall
 firewall_type: iptables
-
-## Optional Variables ##
 
 # Domain name sent by the DHCP server.
 pihole_domain_name: local

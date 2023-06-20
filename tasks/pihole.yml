@@ -19,12 +19,14 @@
     name: guidugli.user
 
 - name: Create directories
+  become: yes
+  become_method: su
+  become_user: "{{ pihole_username }}"
+  become_flags: '-s /bin/bash -l'
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    owner: "{{ pihole_username }}"
-    group: "{{ pihole_username }}"
-    mode: '0755'
+    mode: '0775'
   loop:
     - "{{ pihole_homedir }}/etc-dnsmasq.d"
     - "{{ pihole_homedir }}/etc-pihole"
@@ -69,6 +71,17 @@
     tag: latest
     state: present
 
+- name: Stop pihole service
+  become: yes
+  become_user: "{{ pihole_username }}"
+  become_method: su
+  become_flags: '-s /bin/bash -l'
+  ansible.builtin.systemd:
+    name: "container-{{ pihole_container_name }}.service"
+    scope: user
+    state: stopped
+  when: pihole_reset_password
+
 - name: Create secret
   become: yes
   become_method: su
@@ -78,6 +91,8 @@
     name: webpassword
     state: present
     data: "{{ pihole_web_password }}"
+    skip_existing: "{{ pihole_reset_password == false }}"
+    force: "{{ pihole_reset_password }}"
 
 - name: Create Pihole Container
   become: yes
