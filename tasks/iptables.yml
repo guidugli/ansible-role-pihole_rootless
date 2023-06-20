@@ -55,4 +55,3 @@
     name: iptables.service
     state: started
     enabled: yes
-
