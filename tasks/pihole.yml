@@ -1,6 +1,16 @@
 ---
 # tasks file for pihole_rootless
 
+# Set a custom dns as slirp4netns do not route localhost connections
+# Also a good idea to prevent loosing dns when doing maintenance on
+# the PiHole service.
+- name: Set DHCP to add nameserver for local host
+  ansible.builtin.lineinfile:
+    path: /etc/dhcp/dhclient.conf
+    regexp: '^\s*#?\s*prepend\sdomain-name-servers\s'
+    line: 'prepend domain-name-servers {{ pihole_server_dnsip }};'
+  when: pihole_server_dnsip is defined
+
 - name: Create pihole user
   vars:
     user_skip_config: true

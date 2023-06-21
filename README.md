@@ -141,6 +141,10 @@ List of domains/subdomains on which CORS is allowed. Wildcards are not supported
 
 Set the cache size for dnsmasq. Useful for increasing the default cache size or to set it to 0. Note that when DNSSEC is "true", then this setting is ignored.
 
+    #pihole_server_dnsip: 192.168.1.1
+
+If the server is using DHCP, this setting will configure DHCP client to add the specified IP as the first nameserver. It is recommended to use this option because slirp4netns is not working locally, and even if it works, the server would loose dns resolution during maintenance of PiHole service.
+
     #pihole_dnsmasq_user: pihole
 
 Allows changing the user that FTLDNS runs as. Default: pihole, some systems such as Synology NAS may require you to change this to root.
