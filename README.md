@@ -1,4 +1,4 @@
-Role Name
+Ansible Role: pihole_rootless
 =========
 
 This ansible role install pihole as rootless container using podman. This increases the security as it makes pihole to run as unprivileged ID.
